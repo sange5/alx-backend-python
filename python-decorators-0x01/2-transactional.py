@@ -8,13 +8,10 @@ def with_db_connection(func):
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Establish database connection
         conn = sqlite3.connect('users.db')
         try:
-            # Pass the connection object to the wrapped function
             result = func(conn, *args, **kwargs)
         finally:
-            # Ensure the connection is closed
             conn.close()
         return result
     return wrapper
@@ -27,15 +24,12 @@ def transactional(func):
     @functools.wraps(func)
     def wrapper(conn, *args, **kwargs):
         try:
-            # Call the wrapped function
             result = func(conn, *args, **kwargs)
-            # Commit the transaction if no error occurs
             conn.commit()
             return result
         except Exception as e:
-            # Roll back the transaction on any error
             conn.rollback()
-            raise e  # Re-raise the exception for further handling
+            raise e  
     return wrapper
 
 @with_db_connection
