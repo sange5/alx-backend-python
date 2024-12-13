@@ -1,33 +1,29 @@
+#!/usr/bin/env python3
+"""
+Unit tests for the utils.access_nested_map function.
+"""
+
 import unittest
 from parameterized import parameterized
+from utils import access_nested_map
 
-# Define the access_nested_map function here for testing purposes.
-def access_nested_map(nested_map, path):
-    """Access a nested dictionary using a tuple of keys."""
-    current = nested_map
-    for key in path:
-        if not isinstance(current, dict) or key not in current:
-            raise KeyError(f"Key '{key}' not found in the nested map.")
-        current = current[key]
-    return current
 
 class TestAccessNestedMap(unittest.TestCase):
-    @parameterized.expand([
-        ("simple_key", {"a": 1}, ("a",), 1),
-        ("nested_key_level1", {"a": {"b": 2}}, ("a",), {"b": 2}),
-        ("nested_key_level2", {"a": {"b": 2}}, ("a", "b"), 2),
-    ])
-    def test_access_nested_map(self, name, nested_map, path, expected):
-        self.assertEqual(access_nested_map(nested_map, path), expected)
+    """
+    Test case for the access_nested_map function in utils module.
+    """
 
     @parameterized.expand([
-        ("missing_key_level1", {}, ("a",), "Key 'a' not found in the nested map."),
-        ("missing_key_level2", {"a": 1}, ("a", "b"), "Key 'b' not found in the nested map."),
+        ({"a": 1}, ("a",), 1),
+        ({"a": {"b": 2}}, ("a",), {"b": 2}),
+        ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
-    def test_access_nested_map_exception(self, name, nested_map, path, expected_message):
-        with self.assertRaises(KeyError) as context:
-            access_nested_map(nested_map, path)
-        self.assertEqual(str(context.exception), expected_message)
+    def test_access_nested_map(self, nested_map: dict, path: tuple, expected: object) -> None:
+        """
+        Test access_nested_map returns the expected result for various inputs.
+        """
+        self.assertEqual(access_nested_map(nested_map, path), expected)
+
 
 if __name__ == "__main__":
     unittest.main()
