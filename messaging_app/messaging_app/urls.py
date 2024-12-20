@@ -30,3 +30,11 @@ urlpatterns = [
     path('api/', include('messaging_app.chats.urls')),  # Correctly include the api routes
 ]
 
+from django.contrib import admin
+from django.urls import path, include
+
+# Include the 'chats' app's URLs with the 'api/' prefix
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('messaging_app.chats.urls')),  # Including chat routes under 'api/' prefix
+]
