@@ -1,8 +1,7 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
-
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """
@@ -10,6 +9,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     """
     queryset = Conversation.objects.prefetch_related('participants', 'messages').all()
     serializer_class = ConversationSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['participants__username']  # Allow search by participant username
 
     def create(self, request, *args, **kwargs):
         """
@@ -37,6 +38,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     queryset = Message.objects.select_related('sender', 'conversation').all()
     serializer_class = MessageSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['sent_at']  # Allow ordering messages by sent time
 
     def create(self, request, *args, **kwargs):
         """
