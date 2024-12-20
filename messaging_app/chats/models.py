@@ -16,3 +16,24 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+# Conversation Model
+class Conversation(models.Model):
+    conversation_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, help_text=_("Unique identifier for the conversation."))
+    participants = models.ManyToManyField(User, related_name="conversations", help_text=_("Users involved in the conversation."))
+    created_at = models.DateTimeField(auto_now_add=True, help_text=_("The date and time the conversation was created."))
+
+    def __str__(self):
+        participant_names = ", ".join(participant.username for participant in self.participants.all())
+        return f"Conversation ({self.conversation_id}): {participant_names}"
+
+# Message Model
+class Message(models.Model):
+    message_id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, help_text=_("Unique identifier for the message."))
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages", help_text=_("The user who sent the message."))
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages", help_text=_("The conversation this message belongs to."))
+    message_body = models.TextField(help_text=_("The content of the message."))
+    sent_at = models.DateTimeField(auto_now_add=True, help_text=_("The date and time the message was sent."))
+
+    def __str__(self):
+        return f"Message {self.message_id} from {self.sender.username}"
