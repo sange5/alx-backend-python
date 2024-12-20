@@ -24,6 +24,8 @@ class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
         fields = ['conversation_id', 'participants', 'created_at', 'messages']
+        ["serializers.ValidationError"]
+
 
     def get_messages(self, obj):
         """
