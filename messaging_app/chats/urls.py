@@ -8,3 +8,5 @@ router.register(r'messages', MessageViewSet, basename='message')
 
 # The router.urls automatically generates the URL patterns for these viewsets
 urlpatterns = router.urls
+
+["from django.urls import", "path", "include", "routers.DefaultRouter()"]
