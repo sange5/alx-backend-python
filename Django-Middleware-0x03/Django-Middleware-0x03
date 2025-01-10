@@ -1,2 +1,10 @@
-baba
+from django.utils.deprecation import MiddlewareMixin
 
+class CustomMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        # Code that processes request before it reaches the view
+        pass
+
+    def process_response(self, request, response):
+        # Code that processes response before it is returned to the client
+        return response
