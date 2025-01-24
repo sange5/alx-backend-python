@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_IMAGE = 'your-dockerhub-username/messaging_app:latest'
+        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
+    }
     stages {
         stage('Clone Repository') {
             steps {
@@ -10,34 +14,42 @@ pipeline {
         }
         stage('Set Up Python Environment') {
             steps {
-                script {
-                    // Install dependencies
-                    sh 'pip3 install -r messaging_app/requirements.txt'
-                }
+                sh 'pip3 install -r messaging_app/requirements.txt'
             }
         }
         stage('Run Tests') {
             steps {
+                sh 'pytest messaging_app/tests --junit-xml=report.xml'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
                 script {
-                    // Run pytest
-                    sh 'pytest messaging_app/tests --junit-xml=report.xml'
+                    sh """
+                    docker build -t $DOCKER_IMAGE -f messaging_app/Dockerfile .
+                    """
                 }
             }
         }
-        stage('Generate Test Report') {
+        stage('Push Docker Image to Docker Hub') {
             steps {
-                publishHTML(target: [
-                    reportName: 'Pytest Report',
-                    reportDir: '.',
-                    reportFiles: 'report.xml',
-                    keepAll: true
-                ])
+                script {
+                    withDockerRegistry(credentialsId: "$DOCKER_CREDENTIALS_ID", url: 'https://index.docker.io/v1/') {
+                        sh "docker push $DOCKER_IMAGE"
+                    }
+                }
             }
         }
     }
     post {
         always {
             archiveArtifacts artifacts: 'report.xml', fingerprint: true
+        }
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs for details.'
         }
     }
 }
