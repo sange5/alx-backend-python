@@ -3,22 +3,23 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git credentialsId: 'github-credentials', url: 'https://github.com/your-username/alx-backend-python.git', branch: 'main'
+                git branch: 'main', 
+                    url: 'https://github.com/your-username/alx-backend-python.git', 
+                    credentialsId: 'github-credentials'
             }
         }
         stage('Set Up Python Environment') {
             steps {
                 script {
-                    // Install dependencies using ShiningPanda
-                    shiningPanda.python('Python-3.10') {
-                        sh 'pip install -r messaging_app/requirements.txt'
-                    }
+                    // Install dependencies
+                    sh 'pip3 install -r messaging_app/requirements.txt'
                 }
             }
         }
         stage('Run Tests') {
             steps {
-                shiningPanda.python('Python-3.10') {
+                script {
+                    // Run pytest
                     sh 'pytest messaging_app/tests --junit-xml=report.xml'
                 }
             }
