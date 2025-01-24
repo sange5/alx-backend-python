@@ -1,1 +1,2 @@
-
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+kubectl apply -f messaging_app/ingress.yaml
