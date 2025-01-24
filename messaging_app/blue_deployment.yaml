@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
       - name: django-app
-        image: <your-docker-image>:blue
+        image: <your-docker-image>:2.0
         ports:
         - containerPort: 8000
