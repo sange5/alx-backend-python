@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git credentialsId: 'github-credentials', url: 'https://github.com/your-username/alx-backend-python.git', branch: 'main'
+            }
+        }
+        stage('Set Up Python Environment') {
+            steps {
+                script {
+                    // Install dependencies using ShiningPanda
+                    shiningPanda.python('Python-3.10') {
+                        sh 'pip install -r messaging_app/requirements.txt'
+                    }
+                }
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                shiningPanda.python('Python-3.10') {
+                    sh 'pytest messaging_app/tests --junit-xml=report.xml'
+                }
+            }
+        }
+        stage('Generate Test Report') {
+            steps {
+                publishHTML(target: [
+                    reportName: 'Pytest Report',
+                    reportDir: '.',
+                    reportFiles: 'report.xml',
+                    keepAll: true
+                ])
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'report.xml', fingerprint: true
+        }
+    }
+}
