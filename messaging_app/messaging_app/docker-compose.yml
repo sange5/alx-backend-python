@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   web:
     build:
       context: .
     container_name: django_app
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python3 manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
@@ -19,7 +17,6 @@ services:
       - DATABASE_NAME=${MYSQL_DB}
       - DATABASE_USER=${MYSQL_USER}
       - DATABASE_PASSWORD=${MYSQL_PASSWORD}
-
   db:
     image: mysql:8.0
     container_name: mysql_db
