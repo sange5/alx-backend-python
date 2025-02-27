@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_CREDENTIALS = 'timon-yego'  // Name of the GitHub credentials added in Jenkins
+        DOCKER_CREDENTIALS = 'timo771'  // Docker Hub credentials for pushing images
+        IMAGE_NAME = 'timo771/messaging-app'  // Docker image name (replace with your Docker Hub username)
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Checkout the specified branch from GitHub repository
+               git branch: 'main', git credentialsId: "${env.GIT_CREDENTIALS}", url: 'https://github.com/timon-yego/alx-backend-python.git'
+            }
+        }
+
+        stage('Set up Python') {
+            steps {
+                script {
+                    // Set up a virtual environment and install dependencies using pip3
+                    sh 'python3 -m venv venv'
+                    sh 'source venv/bin/activate'
+                    sh 'pip3 install -r messaging_app/requirements.txt'
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    // Run pytest and generate test output
+                    sh 'source venv/bin/activate'
+                    sh 'pytest --maxfail=1 --disable-warnings -q > result.log || true'
+                    sh 'tail -n 10 result.log'  // Display last 10 lines of result log
+                }
+            }
+        }
+
+        stage('Generate Test Report') {
+            steps {
+                script {
+                    // Generate a pytest report in XML format
+                    sh 'pytest --maxfail=5 --disable-warnings -q --junitxml=pytest-report.xml'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image using the Dockerfile in the messaging_app directory
+                    sh 'docker build -t ${IMAGE_NAME}:${BUILD_ID} messaging_app/'
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    // Login to Docker Hub and push the Docker image
+                    withCredentials([usernamePassword(credentialsId: "${env.DOCKER_CREDENTIALS}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                        sh 'docker push ${IMAGE_NAME}:${BUILD_ID}'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Archive the test report so it's available even if the pipeline fails
+            archiveArtifacts artifacts: '**/pytest-report.xml', allowEmptyArchive: true
+        }
+
+        success {
+            echo "Tests passed successfully!"
+        }
+
+        failure {
+            echo "Tests failed!"
+        }
+    }
+}
